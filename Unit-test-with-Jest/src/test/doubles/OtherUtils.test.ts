@@ -5,7 +5,9 @@ import {
 } from "../../app/doubles/OtherUtils";
 
 describe("OtherUtils test suite", () => {
-  // Spies
+  /* 
+  ---------- Spies ----------
+  */
   describe.only("OtherStringUtils tests with spies", () => {
     let sut: OtherStringUtils;
 
@@ -34,7 +36,9 @@ describe("OtherUtils test suite", () => {
     });
   });
 
-  // Mocks
+  /* 
+  ---------- Mocks ----------
+  */
   describe("Tracking callbacks with Jest mocks", () => {
     const callbackMock = jest.fn();
 
