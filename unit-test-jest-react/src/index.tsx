@@ -1,8 +1,14 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import LoginComponent from "./LoginComponent";
+import LoginService from "./services/LoginService";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
-root.render(<App />);
+const loginService = new LoginService();
+
+const setToken = (token: string) => {
+  console.log(`received the token ${token}`);
+};
+
+root.render(<LoginComponent loginService={loginService} setToken={setToken} />);
