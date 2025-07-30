@@ -1,0 +1,2 @@
+- Summarize the codebase and create a NestJS lesson in markdown format, in question & answer format in path "lessons".
+- Ref some instruct to gen resources in #fetch https://docs.nestjs.com/recipes/crud-generator#generating-a-new-resource
