@@ -3,8 +3,8 @@
 ## Table of Contents
 
 1. [Core NestJS Architecture](#core-nestjs-architecture)
-2. [MongoDB Integration](#mongodb-integration)
-3. [CRUD Operations](#crud-operations)
+2. [MongoDB Integration](#mongodb-integration) - _Moved to separate file: [03-mongodb-integration.md](./03-mongodb-integration.md)_
+3. [CRUD Operations](#crud-operations) - _Moved to separate file: [02-crud-operations.md](./02-crud-operations.md)_
 4. [NestJS CLI Generator](#nestjs-cli-generator)
 5. [Best Practices](#best-practices)
 
@@ -150,131 +150,58 @@ export class AppModule {}
 
 ## MongoDB Integration
 
-### Q: How is MongoDB integrated with NestJS?
+> **Note**: MongoDB Integration details have been moved to a separate file for better organization.
+> Please refer to: [`03-mongodb-integration.md`](./03-mongodb-integration.md)
 
-**A:** MongoDB integration is achieved through:
+### Q: Quick overview - How is MongoDB integrated with NestJS?
 
-1. **Schema Definition** (`user.schema.ts`):
+**A:** MongoDB integration in NestJS is achieved through:
+
+- **Mongoose ODM**: Object Document Mapping for MongoDB
+- **Schema Decorators**: `@Schema()` and `@Prop()` for defining data structure
+- **Dependency Injection**: `@InjectModel()` to inject models into services
+- **Async Configuration**: Dynamic connection setup using environment variables
+
+**Basic integration pattern**:
 
 ```typescript
+// 1. Define Schema
 @Schema()
 export class User {
   @Prop({ required: true })
   email: string;
-
-  @Prop({ required: true })
-  password: string;
-
-  @Prop()
-  name: string;
-
-  @Prop()
-  age: number;
-
-  @Prop()
-  address: string;
-
-  @Prop()
-  createdAt: Date;
-
-  @Prop()
-  updatedAt: Date;
 }
+
+// 2. Inject Model in Service
+constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+
+// 3. Register in Module
+MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])
 ```
-
-2. **Model Injection** in Service:
-
-```typescript
-constructor(
-  @InjectModel(User.name)
-  private userModel: Model<User>,
-) {}
-```
-
-### Q: What are the benefits of using Mongoose with NestJS?
-
-**A:** Benefits include:
-
-- **Type Safety**: TypeScript integration with schema definitions
-- **Decorators**: Clean, declarative schema definition using `@Schema()` and `@Prop()`
-- **Dependency Injection**: Seamless integration with NestJS DI system
-- **Validation**: Built-in validation at the schema level
-- **Middleware**: Support for pre/post hooks
 
 ---
 
 ## CRUD Operations
 
-### Q: How are CRUD operations implemented in the Users module?
+> **Note**: CRUD Operations have been moved to a separate file for better organization.
+> Please refer to: [`02-crud-operations.md`](./02-crud-operations.md)
+
+### Q: Quick overview - How are CRUD operations implemented?
 
 **A:** CRUD operations are divided between Controller (HTTP layer) and Service (business logic):
 
-**Controller** (`users.controller.ts`):
+- **Controller**: Handles HTTP requests using decorators like `@Post()`, `@Get()`, `@Patch()`, `@Delete()`
+- **Service**: Contains business logic and database interactions
+- **DTOs**: Define data structure for request/response validation
+
+**Key decorators**:
 
 ```typescript
-@Controller('users')
-export class UsersController {
-  @Post()
-  create(
-    @Body('email') email: string,
-    @Body('password') password: string,
-    @Body('name') name: string,
-  ) {
-    return this.usersService.create(email, password, name);
-  }
-
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
-  }
-}
+// @Body('email') tương đương với const email: string = req.body.email
+@Body('email') email: string  // Extract specific field from request body
+@Body() dto: CreateUserDto     // Extract entire request body as DTO
+@Param('id') id: string       // Extract URL parameter
 ```
-
-**Service** (`users.service.ts`):
-
-```typescript
-async create(email: string, password: string, name: string) {
-  const user = await this.userModel.create({
-    email,
-    password,
-    name,
-  });
-  return user;
-}
-```
-
-### Q: What is the current state of CRUD implementation?
-
-**A:** Current implementation status:
-
-- ✅ **CREATE**: Fully implemented with MongoDB integration
-- ⚠️ **READ**: `findAll()` returns placeholder text (needs implementation)
-- ⚠️ **UPDATE**: Returns placeholder text (needs implementation)
-- ⚠️ **DELETE**: Returns placeholder text (needs implementation)
-
-### Q: What are DTOs and how are they used?
-
-**A:** DTOs (Data Transfer Objects) define the shape of data for API requests:
-
-- **CreateUserDto**: Currently empty class (needs implementation)
-- **UpdateUserDto**: Extends CreateUserDto using `PartialType` from `@nestjs/mapped-types`
-
-The `PartialType` utility makes all properties optional, perfect for update operations.
 
 ---
 
@@ -499,6 +426,79 @@ async findOne(id: string): Promise<User> {
 - **SQL Entities** map directly to relational database tables.
 - **NoSQL Schemas** define the structure of documents in collections.
 - SQL relies on relationships (foreign keys), while NoSQL uses embedded documents or references.
+
+---
+
+## Q&A
+
+### Q: How is the `.env` file handled in this codebase?
+
+**A:** The `.env` file is managed using the `@nestjs/config` package, which provides a robust configuration system for environment variables.
+
+1. **Configuration Module**:
+
+   - The `ConfigModule` is imported in the `AppModule` and set as global.
+   - This ensures that environment variables are accessible throughout the application.
+   - Example:
+     ```typescript
+     ConfigModule.forRoot({
+       isGlobal: true,
+     });
+     ```
+
+2. **Accessing Environment Variables**:
+
+   - The `ConfigService` is used to retrieve values from the `.env` file.
+   - Example:
+     ```typescript
+     const port = configService.get<string>('PORT');
+     ```
+
+3. **Usage in Application**:
+
+   - In `main.ts`, the `ConfigService` is used to dynamically set the port for the application:
+     ```typescript
+     await app.listen(configService.get<string>('PORT'));
+     ```
+
+**Key Benefits**:
+
+- Centralized configuration management.
+- Easy access to environment variables using `ConfigService`.
+- Supports default values and validation for environment variables.
+
+### Q: How is the `.env` file handled in the AppModule?
+
+**A:** The `.env` file is integrated into the `AppModule` using the `ConfigModule` and `ConfigService`:
+
+1. **Global Configuration**:
+
+   - The `ConfigModule` is imported and set as global to make environment variables accessible throughout the application.
+   - Example:
+     ```typescript
+     ConfigModule.forRoot({
+       isGlobal: true,
+     });
+     ```
+
+2. **Dynamic MongoDB Connection**:
+   - The `MongooseModule` uses `ConfigService` to dynamically retrieve the `MONGODB_URI` from the `.env` file.
+   - Example:
+     ```typescript
+     MongooseModule.forRootAsync({
+       imports: [ConfigModule],
+       useFactory: async (configService: ConfigService) => ({
+         uri: configService.get<string>('MONGODB_URI'),
+       }),
+       inject: [ConfigService],
+     });
+     ```
+
+**Key Benefits**:
+
+- Centralized configuration management.
+- Dynamic environment variable access using `ConfigService`.
+- Simplifies database connection setup.
 
 ---
 

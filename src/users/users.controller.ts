@@ -17,14 +17,10 @@ export class UsersController {
 
   @Post()
   create(
-    @Body('email')
-    email: string,
-    @Body('password')
-    password: string,
-    @Body('name')
-    name: string,
+    @Body()
+    createUserDTO: CreateUserDto,
   ) {
-    return this.usersService.create(email, password, name);
+    return this.usersService.create(createUserDTO);
   }
 
   @Get()
@@ -34,16 +30,17 @@ export class UsersController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+    // const id: string = req.params.id
+    return this.usersService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return this.usersService.remove(id);
   }
 }
